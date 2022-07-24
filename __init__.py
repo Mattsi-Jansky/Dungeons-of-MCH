@@ -29,9 +29,9 @@ def render():
       position = (camera[0] + x, camera[1] + y)
       if position[0] >= 0 and position[0] < max_level_size \
         and position[1] >= 0 and position[1] < max_level_size:
-        if level[position[0]][position[1]] == 'wall':
+        if map[position[0]][position[1]].tile_type == 'wall':
           display.drawPng(x * 16, y * 16, wall)
-        if level[position[0]][position[1]] == 'floor':
+        if map[position[0]][position[1]].tile_type == 'floor':
           display.drawPng(x * 16, y * 16, floor)
   display.drawPng(32, 32, player)
   display.flush()
