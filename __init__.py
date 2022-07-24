@@ -3,6 +3,7 @@ import random
 import machine
 
 from .assets import player, wall
+from .dungeonGenerator import Generator
 
 def drawRandomLine():
   x1 = random.randint(0,320)
@@ -18,6 +19,7 @@ def drawRandomLine():
   display.flush()
   machine.lightsleep(50)
 
-display.drawFill(0xFFFFFF)
+gen = Generator()
+gen.gen_level()
 while True:
   drawRandomLine()
