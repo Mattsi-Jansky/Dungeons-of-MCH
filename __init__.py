@@ -5,12 +5,22 @@ import machine
 from .assets import player, wall, floor
 from .dungeonGenerator import Generator
 
+class Tile:
+  def __init__(self, tile_type):
+    self.tile_type = tile_type
+
 gen = Generator()
 gen.gen_level()
 level = gen.level
 first_room = gen.room_list[0]
 camera = (first_room[0],first_room[1])
 max_level_size = 64
+map = []
+for y in range(len(level)-1):
+    row = []
+    for x in range(len(level[y])-1):
+      row.append(Tile(level[x][y]))
+    map.append(row)
 
 def render():
   display.drawFill(0x000000)
