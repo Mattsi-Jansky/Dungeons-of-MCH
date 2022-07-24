@@ -9,10 +9,26 @@ max_level_size = 64
 map = []
 running = True
 camera = (0,0)
+entities = []
+
+class Entity:
+  def __init__(self):
+    entities.append(self)
+
+  def get_graphic(self):
+    return floor
+
+class Player(Entity):
+  def __init__(self):
+    super(Entity, self).__init__()
+
+  def get_graphic(self):
+    return player
 
 class Tile:
   def __init__(self, tile_type):
     self.tile_type = tile_type
+    self.entity = None
 
 def init_map(map,camera):
   gen = Generator()
@@ -25,6 +41,7 @@ def init_map(map,camera):
     for x in range(len(level[y])-1):
       row.append(Tile(level[x][y]))
     map.append(row)
+  map[camera[0]][camera[1]].entity = Player()
 
 def render():
   display.drawFill(0x000000)
