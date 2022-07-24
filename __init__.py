@@ -10,6 +10,7 @@ max_level_size = 64
 screen_size_x = 22
 screen_size_y = 13
 debounce = False
+dirty = True
 
 class Camera:
   def __init__(self, x, y):
@@ -76,25 +77,25 @@ def render():
           display.drawPng(x * 16, y * 16, map[position[0]][position[1]].entity.get_graphic())
   display.flush()
 
-def move(x,y):
-  entity = map[player_pos[0]][player_pos[1]].entity
-  map[player_pos[0] + x][player_pos[1] + y].entity = entity
-  map[player_pos[0]][player_pos[1]].entity = None
-  player_pos[0] = player_pos[0] + x
-  player_pos[1] = player_pos[1] + y
-  camera.update(player_pos[0],player_pos[1])
-
-def move_left(pressed):
-  global debounce
-  if pressed and not debounce:
-    move(-1,0)
-    debounce = True
-  elif not pressed:
-    debounce = False
+def move(pressed, x,y):
+  global dirty
+  if pressed:
+    entity = map[player_pos[0]][player_pos[1]].entity
+    map[player_pos[0] + x][player_pos[1] + y].entity = entity
+    map[player_pos[0]][player_pos[1]].entity = None
+    player_pos[0] = player_pos[0] + x
+    player_pos[1] = player_pos[1] + y
+    camera.update(player_pos[0],player_pos[1])
+    dirty = True
 
 init(map,camera)
-buttons.attach(buttons.BTN_LEFT,move_left)
+buttons.attach(buttons.BTN_LEFT, lambda pressed: move(pressed, -1, 0))
+buttons.attach(buttons.BTN_RIGHT, lambda pressed: move(pressed, 1, 0))
+buttons.attach(buttons.BTN_DOWN, lambda pressed: move(pressed, 0, 1))
+buttons.attach(buttons.BTN_UP, lambda pressed: move(pressed, 0, -1))
 
 while running:
-  render()
-  machine.lightsleep(50)
+  if dirty:
+    render()
+    machine.lightsleep(50)
+    dirty = False
