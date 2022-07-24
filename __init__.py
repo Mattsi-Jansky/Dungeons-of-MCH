@@ -1,6 +1,7 @@
 import display
 import random
 import machine
+import buttons
 
 from .assets import player, wall, floor
 from .dungeonGenerator import Generator
@@ -8,6 +9,7 @@ from .dungeonGenerator import Generator
 max_level_size = 64
 screen_size_x = 22
 screen_size_y = 13
+debounce = False
 
 class Camera:
   def __init__(self, x, y):
@@ -21,6 +23,7 @@ class Camera:
 map = []
 running = True
 camera = Camera(0,0)
+player_pos = [0,0]
 entities = []
 
 class Entity:
@@ -42,7 +45,8 @@ class Tile:
     self.tile_type = tile_type
     self.entity = None
 
-def init_map(map,camera):
+def init(map,camera):
+  global player_pos
   gen = Generator()
   gen.gen_level()
   level = gen.level
@@ -55,9 +59,7 @@ def init_map(map,camera):
     map.append(row)
   map[spawn[0]][spawn[1]].entity = Player()
   camera.update(spawn[0],spawn[1])
-  print(f"Spawn player at {spawn[0]},{spawn[1]}")
-  print(f"Size of map: {len(map)}")
-  print(f"Size of level: {len(level)}")
+  player_pos = [spawn[0],spawn[1]]
 
 def render():
   display.drawFill(0x000000)
@@ -74,7 +76,20 @@ def render():
           display.drawPng(x * 16, y * 16, map[position[0]][position[1]].entity.get_graphic())
   display.flush()
 
-init_map(map,camera)
+def move_left(pressed):
+  global debounce
+  if pressed and not debounce:
+    entity = map[player_pos[0]][player_pos[1]].entity
+    map[player_pos[0]-1][player_pos[1]].entity = entity
+    map[player_pos[0]][player_pos[1]].entity = None
+    player_pos[0] = player_pos[0] - 1
+    camera.update(player_pos[0],player_pos[1])
+    debounce = True
+  elif not pressed:
+    debounce = False
+
+init(map,camera)
+buttons.attach(buttons.BTN_LEFT,move_left)
 
 while running:
   render()
