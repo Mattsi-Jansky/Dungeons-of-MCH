@@ -8,7 +8,8 @@ from .dungeonGenerator import Generator
 gen = Generator()
 gen.gen_level()
 level = gen.level
-camera = (0,0)
+first_room = gen.room_list[0]
+camera = (first_room[0],first_room[1])
 max_level_size = 64
 
 def render():
