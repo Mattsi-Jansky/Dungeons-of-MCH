@@ -2,8 +2,7 @@ import display
 import random
 import machine
 
-from .assets import player
-from .assets import wall
+from .assets import player, wall
 
 def drawRandomLine():
   x1 = random.randint(0,320)
