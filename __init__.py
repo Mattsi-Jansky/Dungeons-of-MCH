@@ -114,28 +114,32 @@ def render():
           display.drawPng(x * 16, y * 16, map[position[0]][position[1]].entity.get_graphic())
   display.flush()
 
-def move(pressed, transform):
+def move(entity, transform):
+  from_tile = map[player_pos.x][player_pos.y]
+  to_point = player_pos.transform(transform.x, transform.y)
+  to_tile = map[to_point.x][to_point.y]
+  if not to_tile.entity and to_tile.tile_type is not 'wall' :
+    to_tile.entity = from_tile.entity
+    from_tile.entity = None
+
+def move_player(pressed, transform):
   global dirty
+  global player_pos
   if pressed:
-    from_tile = map[player_pos.x][player_pos.y]
-    to_tile = map[player_pos.x + transform.x][player_pos.y + transform.y]
-    if not to_tile.entity and to_tile.tile_type is not 'wall' :
-      to_tile.entity = from_tile.entity
-      from_tile.entity = None
-      player_pos.x = player_pos.x + transform.x
-      player_pos.y = player_pos.y + transform.y
-      camera.update(player_pos.x,player_pos.y)
-      dirty = True
+    move(map[player_pos.x][player_pos.y], transform)
+    player_pos = player_pos.transform(transform.x, transform.y)
+    camera.update(player_pos.x,player_pos.y)
+    dirty = True
 
 def tick():
   for entity in entities:
     entity.tick()
 
 init(map,camera)
-buttons.attach(buttons.BTN_LEFT, lambda pressed: move(pressed, Point(-1, 0)))
-buttons.attach(buttons.BTN_RIGHT, lambda pressed: move(pressed, Point(1, 0)))
-buttons.attach(buttons.BTN_DOWN, lambda pressed: move(pressed, Point(0, 1)))
-buttons.attach(buttons.BTN_UP, lambda pressed: move(pressed, Point(0, -1)))
+buttons.attach(buttons.BTN_LEFT, lambda pressed: move_player(pressed, Point(-1, 0)))
+buttons.attach(buttons.BTN_RIGHT, lambda pressed: move_player(pressed, Point(1, 0)))
+buttons.attach(buttons.BTN_DOWN, lambda pressed: move_player(pressed, Point(0, 1)))
+buttons.attach(buttons.BTN_UP, lambda pressed: move_player(pressed, Point(0, -1)))
 
 while running:
   if dirty:
