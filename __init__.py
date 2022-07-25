@@ -41,7 +41,7 @@ entities = []
 class Entity:
   def __init__(self):
     entities.append(self)
-    
+    self.position = Point(0,0)
 
   def get_graphic(self):
     return floor
@@ -51,14 +51,14 @@ class Entity:
 
 class Player(Entity):
   def __init__(self):
-    super(Entity, self).__init__()
+    super(Player, self).__init__()
 
   def get_graphic(self):
     return player
 
 class Enemy(Entity):
   def __init__(self, graphic):
-    super(Entity, self).__init__()
+    super(Enemy, self).__init__()
     self.graphic = graphic
   
   def get_graphic(self):
@@ -66,6 +66,7 @@ class Enemy(Entity):
   
   def tick(self):
     direction = move_directions[random.randint(0,len(move_directions) - 1)]
+    move(self,direction)
 
 class Tile:
   def __init__(self, tile_type):
@@ -87,6 +88,7 @@ def init(map,camera):
   map[spawn[0]][spawn[1]].entity = Player()
   camera.update(spawn[0],spawn[1])
   player_pos = Point(spawn[0],spawn[1])
+  map[spawn[0]][spawn[1]].entity.position = player_pos
   
   for i in range(random.randint(min_enemies, max_enemies)):
     room = gen.random_room()
@@ -115,19 +117,21 @@ def render():
   display.flush()
 
 def move(entity, transform):
-  from_tile = map[player_pos.x][player_pos.y]
-  to_point = player_pos.transform(transform.x, transform.y)
+  from_tile = map[entity.position.x][entity.position.y]
+  to_point = entity.position.transform(transform.x, transform.y)
   to_tile = map[to_point.x][to_point.y]
   if not to_tile.entity and to_tile.tile_type is not 'wall' :
-    to_tile.entity = from_tile.entity
+    to_tile.entity = entity
     from_tile.entity = None
+    entity.position = to_point
 
 def move_player(pressed, transform):
   global dirty
   global player_pos
   if pressed:
-    move(map[player_pos.x][player_pos.y], transform)
-    player_pos = player_pos.transform(transform.x, transform.y)
+    player_entity = map[player_pos.x][player_pos.y].entity
+    move(player_entity, transform)
+    player_pos = player_entity.position
     camera.update(player_pos.x,player_pos.y)
     dirty = True
 
