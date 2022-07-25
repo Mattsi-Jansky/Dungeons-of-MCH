@@ -50,22 +50,25 @@ class Entity:
     pass
 
 class Player(Entity):
-  def __init__(self):
+  def __init__(self, position):
     super(Player, self).__init__()
+    self.position = position
 
   def get_graphic(self):
     return player
 
 class Enemy(Entity):
-  def __init__(self, graphic):
+  def __init__(self, graphic, position):
     super(Enemy, self).__init__()
     self.graphic = graphic
+    self.position = position
   
   def get_graphic(self):
     return self.graphic
   
   def tick(self):
     direction = move_directions[random.randint(0,len(move_directions) - 1)]
+    print(f"Moving to {direction.x},{direction.y}")
     move(self,direction)
 
 class Tile:
@@ -79,27 +82,26 @@ def init(map,camera):
   gen.gen_level()
   level = gen.level
   first_room = gen.room_list[0]
-  spawn = (first_room[0] + int(first_room[2] / 2), first_room[1] + int(first_room[3] / 2))
+  player_pos = Point(first_room[0] + int(first_room[2] / 2), first_room[1] + int(first_room[3] / 2))
   for y in range(len(level)):
     row = []
     for x in range(len(level[y])):
       row.append(Tile(level[x][y]))
     map.append(row)
-  map[spawn[0]][spawn[1]].entity = Player()
-  camera.update(spawn[0],spawn[1])
-  player_pos = Point(spawn[0],spawn[1])
-  map[spawn[0]][spawn[1]].entity.position = player_pos
+  map[player_pos.x][player_pos.y].entity = Player(player_pos)
+  camera.update(player_pos.x,player_pos.y)
   
   for i in range(random.randint(min_enemies, max_enemies)):
     room = gen.random_room()
     xSpacing = random.randint(0,room[2] - 1)
     ySpacing = random.randint(0,room[3] - 1)
-    tile = map[room[0] + xSpacing][room[1] + ySpacing]
+    spawn = Point(room[0] + xSpacing, room[1] + ySpacing)
+    tile = map[spawn.x][spawn.y]
     if not tile.entity:
       graphic = goblin
       if bool(random.getrandbits(1)):
         graphic = troll
-      tile.entity = Enemy(graphic)
+      tile.entity = Enemy(graphic, spawn)
 
 def render():
   display.drawFill(0x000000)
@@ -136,6 +138,7 @@ def move_player(pressed, transform):
     dirty = True
 
 def tick():
+  print(f"Number of entities: {len(entities)}")
   for entity in entities:
     entity.tick()
 
