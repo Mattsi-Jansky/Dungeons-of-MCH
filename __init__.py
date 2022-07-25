@@ -6,6 +6,14 @@ import buttons
 from .assets import player, wall, floor, goblin, troll
 from .dungeonGenerator import Generator
 
+class Point:
+  def __init__(self, x, y):
+    self.x = x
+    self.y = y
+  
+  def transform(self, x, y):
+    return Point(self.x + x, self.y + y)
+
 max_level_size = 64
 screen_size_x = 22
 screen_size_y = 13
@@ -13,6 +21,7 @@ debounce = False
 dirty = True
 min_enemies = 8
 max_enemies = 15
+move_directions = [Point(0,1), Point(0,-1), Point(1,0), Point(-1,0), Point(0,0)]
 
 class Camera:
   def __init__(self, x, y):
@@ -26,15 +35,19 @@ class Camera:
 map = []
 running = True
 camera = Camera(0,0)
-player_pos = [0,0]
+player_pos = Point(0,0)
 entities = []
 
 class Entity:
   def __init__(self):
     entities.append(self)
+    
 
   def get_graphic(self):
     return floor
+  
+  def tick(self):
+    pass
 
 class Player(Entity):
   def __init__(self):
@@ -50,6 +63,9 @@ class Enemy(Entity):
   
   def get_graphic(self):
     return self.graphic
+  
+  def tick(self):
+    direction = move_directions[random.randint(0,len(move_directions) - 1)]
 
 class Tile:
   def __init__(self, tile_type):
@@ -70,7 +86,7 @@ def init(map,camera):
     map.append(row)
   map[spawn[0]][spawn[1]].entity = Player()
   camera.update(spawn[0],spawn[1])
-  player_pos = [spawn[0],spawn[1]]
+  player_pos = Point(spawn[0],spawn[1])
   
   for i in range(random.randint(min_enemies, max_enemies)):
     room = gen.random_room()
@@ -98,27 +114,32 @@ def render():
           display.drawPng(x * 16, y * 16, map[position[0]][position[1]].entity.get_graphic())
   display.flush()
 
-def move(pressed, x,y):
+def move(pressed, transform):
   global dirty
   if pressed:
-    from_tile = map[player_pos[0]][player_pos[1]]
-    to_tile = map[player_pos[0] + x][player_pos[1] + y]
+    from_tile = map[player_pos.x][player_pos.y]
+    to_tile = map[player_pos.x + transform.x][player_pos.y + transform.y]
     if not to_tile.entity and to_tile.tile_type is not 'wall' :
       to_tile.entity = from_tile.entity
       from_tile.entity = None
-      player_pos[0] = player_pos[0] + x
-      player_pos[1] = player_pos[1] + y
-      camera.update(player_pos[0],player_pos[1])
+      player_pos.x = player_pos.x + transform.x
+      player_pos.y = player_pos.y + transform.y
+      camera.update(player_pos.x,player_pos.y)
       dirty = True
 
+def tick():
+  for entity in entities:
+    entity.tick()
+
 init(map,camera)
-buttons.attach(buttons.BTN_LEFT, lambda pressed: move(pressed, -1, 0))
-buttons.attach(buttons.BTN_RIGHT, lambda pressed: move(pressed, 1, 0))
-buttons.attach(buttons.BTN_DOWN, lambda pressed: move(pressed, 0, 1))
-buttons.attach(buttons.BTN_UP, lambda pressed: move(pressed, 0, -1))
+buttons.attach(buttons.BTN_LEFT, lambda pressed: move(pressed, Point(-1, 0)))
+buttons.attach(buttons.BTN_RIGHT, lambda pressed: move(pressed, Point(1, 0)))
+buttons.attach(buttons.BTN_DOWN, lambda pressed: move(pressed, Point(0, 1)))
+buttons.attach(buttons.BTN_UP, lambda pressed: move(pressed, Point(0, -1)))
 
 while running:
   if dirty:
     render()
     machine.lightsleep(50)
     dirty = False
+    tick()
