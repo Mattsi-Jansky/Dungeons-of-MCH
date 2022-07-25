@@ -45,6 +45,10 @@ class Generator():
 
         return [x, y, w, h]
 
+    def random_room(self):
+        max = len(self.room_list) - 1
+        return self.room_list[random.randint(0,random.randint(0,max))]
+
     def room_overlapping(self, room, room_list):
         x = room[0]
         y = room[1]

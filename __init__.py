@@ -3,7 +3,7 @@ import random
 import machine
 import buttons
 
-from .assets import player, wall, floor
+from .assets import player, wall, floor, goblin
 from .dungeonGenerator import Generator
 
 max_level_size = 64
@@ -11,6 +11,8 @@ screen_size_x = 22
 screen_size_y = 13
 debounce = False
 dirty = True
+min_enemies = 3
+max_enemies = 10
 
 class Camera:
   def __init__(self, x, y):
@@ -41,6 +43,14 @@ class Player(Entity):
   def get_graphic(self):
     return player
 
+class Enemy(Entity):
+  def __init__(self, graphic):
+    super(Entity, self).__init__()
+    self.graphic = graphic
+  
+  def get_graphic(self):
+    return self.graphic
+
 class Tile:
   def __init__(self, tile_type):
     self.tile_type = tile_type
@@ -61,6 +71,14 @@ def init(map,camera):
   map[spawn[0]][spawn[1]].entity = Player()
   camera.update(spawn[0],spawn[1])
   player_pos = [spawn[0],spawn[1]]
+  
+  for i in range(random.randint(min_enemies, max_enemies)):
+    room = gen.random_room()
+    xSpacing = random.randint(0,room[2] - 1)
+    ySpacing = random.randint(0,room[3] - 1)
+    tile = map[room[0] + xSpacing][room[1] + ySpacing]
+    if not tile.entity:
+      tile.entity = Enemy(goblin)
 
 def render():
   display.drawFill(0x000000)
