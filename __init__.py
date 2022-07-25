@@ -80,13 +80,15 @@ def render():
 def move(pressed, x,y):
   global dirty
   if pressed:
-    entity = map[player_pos[0]][player_pos[1]].entity
-    map[player_pos[0] + x][player_pos[1] + y].entity = entity
-    map[player_pos[0]][player_pos[1]].entity = None
-    player_pos[0] = player_pos[0] + x
-    player_pos[1] = player_pos[1] + y
-    camera.update(player_pos[0],player_pos[1])
-    dirty = True
+    from_tile = map[player_pos[0]][player_pos[1]]
+    to_tile = map[player_pos[0] + x][player_pos[1] + y]
+    if not to_tile.entity and to_tile.tile_type is not 'wall' :
+      to_tile.entity = from_tile.entity
+      from_tile.entity = None
+      player_pos[0] = player_pos[0] + x
+      player_pos[1] = player_pos[1] + y
+      camera.update(player_pos[0],player_pos[1])
+      dirty = True
 
 init(map,camera)
 buttons.attach(buttons.BTN_LEFT, lambda pressed: move(pressed, -1, 0))

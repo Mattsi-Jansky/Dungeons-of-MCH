@@ -2,6 +2,8 @@
 
 A game for the MCH2022 badge made in MicroPython.
 
+*Don't expect great code quality*, this is a quick & dirty hack project. I didn't even write tests because I'm not experienced with PyTest.
+
 ## Credits
 
 * Graphics from https://0x72.itch.io/16x16-dungeon-tileset (Thanks Rob!)
